@@ -61,7 +61,7 @@ contract Charge60Vault is ERC20, Ownable, ReentrancyGuard, IVault {
 		address wrapped_,
 		address share_,
 		address unirouter_
-	) public ERC20(_name, _symbol) {
+	) ERC20(_name, _symbol) {
 		strategy = _strategy;
 		approvalDelay = _approvalDelay;
 		dollar = dollar_;
