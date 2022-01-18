@@ -48,7 +48,7 @@ contract ChargeVault is ERC20, Ownable, ReentrancyGuard, IVault {
 		string memory _name,
 		string memory _symbol,
 		uint256 _approvalDelay
-	) public ERC20(_name, _symbol) {
+	) ERC20(_name, _symbol) {
 		strategy = _strategy;
 		approvalDelay = _approvalDelay;
 	}
