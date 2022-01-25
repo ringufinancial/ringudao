@@ -1,0 +1,23 @@
+{
+  "name": "test-new-ringu-stuff",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "hardhat compile",
+    "test:light": "hardhat test",
+    "test": "hardhat coverage"
+  },
+  "keywords": [],
+  "author": "RINGU",
+  "license": "ISC",
+  "devDependencies": {
+    "@nomiclabs/hardhat-ethers": "^2.0.2",
+    "@nomiclabs/hardhat-waffle": "^2.0.1",
+    "chai": "^4.3.4",
+    "ethereum-waffle": "^3.4.0",
+    "ethers": "^5.3.1",
+    "hardhat": "^2.4.0",
+    "solidity-coverage": "^0.7.16"
+  }
+}
