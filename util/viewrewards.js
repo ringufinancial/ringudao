@@ -6,6 +6,17 @@ const rpcURL = 'https://polygon-rpc.com/' // Your RCkP URL goes here
 const web3 = new Web3(rpcURL)
 const key = 'MY_API_KEY';
 
+var url = 'https://api-testnet.polygonscan.com/api'
+		+ '?module=account'
+		+ '&action=txlist'
+		+ '&address=0xb7e3b000d57b24964c9c6f517924ef1595770364'
+		+ '&startblock=0'
+		+ '&endblock=99999999'
+		+ '&page=10'
+		+ '&offset=0'
+		+ '&sort=asc'
+		+ '&apikey=' + key;
+/*
 var url = 'https://api.polygonscan.com/api'
 		+ '?module=account'
 		+ '&action=txlist'
@@ -13,10 +24,11 @@ var url = 'https://api.polygonscan.com/api'
 		+ '&startblock=0'
 		+ '&endblock=99999999'
 		+ '&page=10'
-		// + '&offset=0'
+		// + '&offset=10'
 		+ '&offset=0'
 		+ '&sort=asc'
 		+ '&apikey=' + key;
+*/
 
 const init = async () => {
 	
@@ -37,7 +49,7 @@ const init = async () => {
 				// console.log(from_addr + ": " + decoded);
 				counter = counter + 1;
 				var nodeInfo = {
-					"address": from_addr,
+					"address": web3.utils.toChecksumAddress(from_addr),
 					"name": decoded,
 					"createdTs": parseInt(entry.timeStamp),
 					"lastClaim": parseInt(entry.timeStamp), // default, updated later
@@ -63,7 +75,7 @@ const init = async () => {
 			var blockTimeStamp = parseInt(firstIndex, 16);
 			var nodeKey = from_addr + ":" + blockTimeStamp;
 			var nodeSingleCashOutInfo = {
-				"address": from_addr,
+				"address": web3.utils.toChecksumAddress(from_addr),
 				"lastClaim": parseInt(entry.timeStamp),
 				"blocktime": blockTimeStamp				
 			}
@@ -75,7 +87,7 @@ const init = async () => {
 				
 				var from_addr = entry.from;
 				var nodeCashOutInfo = {
-					"address": from_addr,
+					"address": web3.utils.toChecksumAddress(from_addr),
 					"lastClaim": parseInt(entry.timeStamp) 
 				}
 				cashOutAllNodeTimeStampMap.set(from_addr, nodeCashOutInfo);
@@ -137,9 +149,53 @@ const init = async () => {
 		
 		var lastClaimFormatted = moment.unix(nodeInfoList[i].lastClaim).format('YYYY-MM-DDTHH:mm:ssZ');
 		nodeInfoList[i].lastClaimTsFormatted = lastClaimFormatted;
-		console.log(nodeInfoList[i]);
+		// console.log(nodeInfoList[i].address);
 
 	}
+	// SPIT OUT ADDRESS ARRAY
+	console.log("address[] private nodeOwnerAddressList = [");
+	for (i in nodeInfoList) {
+		comma = ",";
+		if (i == nodeInfoList.length - 1) {
+			comma = "";
+		}
+		console.log("\t" + nodeInfoList[i].address + comma);	
+	}
+	console.log("];");
+	
+	// SPIT OUT NODE NAME ARRAY
+	console.log("string[] private nodeNameList = [");
+	for (i in nodeInfoList) {
+		comma = ",";
+		if (i == nodeInfoList.length - 1) {
+			comma = "";
+		}
+		console.log("\t\"" + nodeInfoList[i].name + "\"" + comma);	
+	}
+	console.log("];");
+	
+	// SPIT OUT NODE CREATED TIME ARRAY
+	console.log("uint256[] private nodeCreatedTimeList = [");
+	for (i in nodeInfoList) {
+		comma = ",";
+		if (i == nodeInfoList.length - 1) {
+			comma = "";
+		}
+		console.log("\t" + nodeInfoList[i].createdTs + comma);	
+	}
+	console.log("];");
+	
+	// SPIT OUT NODE LAST CLAIM TIME ARRAY
+	console.log("uint256[] private nodeLastClaimTimeList = [");
+	for (i in nodeInfoList) {
+		comma = ",";
+		if (i == nodeInfoList.length - 1) {
+			comma = "";
+		}
+		console.log("\t" + nodeInfoList[i].lastClaim + comma);	
+	}
+	console.log("];");
+	
 	console.log("-----------------------------------------------");
 	console.log("Total Nodes: " + counter);
 	console.log("Total Nodes With Last Claim Times: " + hadLastClaimCount);

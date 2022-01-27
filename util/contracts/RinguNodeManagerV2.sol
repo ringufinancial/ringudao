@@ -336,11 +336,10 @@ contract NODERewardManagement {
         0x31e9FA16f3Dedbf570bdd80110f08B08f55d6B70,
         0x31e9FA16f3Dedbf570bdd80110f08B08f55d6B70,
         0x31e9FA16f3Dedbf570bdd80110f08B08f55d6B70
-        
     ];
     string[] private nodeNameList = [
-        "tester 2"
-        "tester 3"
+        "tester 2",
+        "tester 3",
         "tester 4",
         "asdfqwerty",
         "asdfqwerty 2",
