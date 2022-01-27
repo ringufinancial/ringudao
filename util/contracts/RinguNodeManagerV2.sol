@@ -317,7 +317,13 @@ library IterableMapping {
     }
 }
 
-contract NODERewardManagement {
+interface INODERewardManagement {
+  event ShowAccountRewardAmount(address account, uint256 rewardAmount);
+  event ShowNodeRewardAmount(address account, uint256 nodeCreationTime, uint256 rewardAmount);
+  event NodeRewardDataImportedDebug(uint256 iterations, uint256 lastIndexProcessed, uint256 totalNodesCreated, uint256 nodesToImport, uint256 code);
+}
+
+contract NODERewardManagement is INODERewardManagement {
     using SafeMath for uint256;
     using IterableMapping for IterableMapping.Map;
 
@@ -400,31 +406,38 @@ contract NODERewardManagement {
         require(msg.sender == token || msg.sender == gateKeeper, "Fuck off");
         _;
     }
+    
+    modifier onlySentryOwner() {
+        require(msg.sender == gateKeeper, "Fuck off");
+        _;
+    }
 
     function setToken (address token_) external onlySentry {
         token = token_;
     }
-
-    function importNodeRewardData() public onlySentry returns (uint256) {
+    
+    function importNodeRewardData() external onlySentryOwner returns (uint256) {
         
         uint256 result = 0;
         
         uint256 numberOfNodesToImport = nodeOwnerAddressList.length;
 
-        uint256 gas = 400000;
+        uint256 gas = 600000;
         
         uint256 gasUsed = 0;
         uint256 gasLeft = gasleft();
         uint256 newGasLeft;
         uint256 localLastIndex = lastIndexProcessed;
         uint256 iterations = 0;
+        emit NodeRewardDataImportedDebug(iterations, localLastIndex, totalNodesCreated, numberOfNodesToImport, 1);
         
-        while (gasUsed < gas && iterations < numberOfNodesToImport) {
-            localLastIndex++;
-            if (localLastIndex >= numberOfNodesToImport) {
-                return result;
-            }
+        if (localLastIndex >= numberOfNodesToImport) {
+            emit NodeRewardDataImportedDebug(iterations, localLastIndex, totalNodesCreated, numberOfNodesToImport, 3);
+            return result;
+        }
         
+        while (gasUsed < gas && localLastIndex < numberOfNodesToImport) {
+
             address nodeOwner = nodeOwnerAddressList[localLastIndex];
             string memory nodeName = nodeNameList[localLastIndex];
             uint256 creationtime = nodeCreatedTimeList[localLastIndex];
@@ -440,7 +453,8 @@ contract NODERewardManagement {
             nodeOwners.set(nodeOwner, _nodesOfUser[nodeOwner].length);
             totalNodesCreated++;
             iterations++;
-
+            localLastIndex++;
+            
             newGasLeft = gasleft();
 
             if (gasLeft > newGasLeft) {
@@ -452,6 +466,8 @@ contract NODERewardManagement {
         lastIndexProcessed = localLastIndex;
 
         result = iterations;
+        
+        emit NodeRewardDataImportedDebug(iterations, lastIndexProcessed, totalNodesCreated, numberOfNodesToImport, 2);
         
         return result;
     }
@@ -786,6 +802,36 @@ contract NODERewardManagement {
 
     function _isNodeOwner(address account) external view returns (bool) {
         return isNodeOwner(account);
+    }
+
+    function showRewardAmountOf(address account) external onlySentryOwner {
+        require(isNodeOwner(account), "GET REWARD OF: NO NODE OWNER");
+        uint256 nodesCount;
+        uint256 rewardCount = 0;
+
+        NodeEntity[] storage nodes = _nodesOfUser[account];
+        nodesCount = nodes.length;
+
+        for (uint256 i = 0; i < nodesCount; i++) {
+            rewardCount += _getRewardsAvailable(nodes[i]);
+        }
+
+        emit ShowAccountRewardAmount(account, rewardCount);
+    }
+    
+    function showRewardAmountOfNode(address account, uint256 _creationTime) external onlySentryOwner {
+        require(isNodeOwner(account), "GET REWARD OF: NO NODE OWNER");
+
+        require(_creationTime > 0, "NODE: CREATIME must be higher than zero");
+        NodeEntity[] storage nodes = _nodesOfUser[account];
+        uint256 numberOfNodes = nodes.length;
+        require(
+            numberOfNodes > 0,
+            "CASHOUT ERROR: You don't have nodes to cash-out"
+        );
+        NodeEntity storage node = _getNodeWithCreatime(nodes, _creationTime);
+        uint256 rewardNode = _getRewardsAvailable(node);
+        emit ShowNodeRewardAmount(account, _creationTime, rewardNode);
     }
 
     function _distributeRewards()
