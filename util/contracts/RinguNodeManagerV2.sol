@@ -599,7 +599,7 @@ contract NODERewardManagement {
         nodesCount = nodes.length;
 
         for (uint256 i = 0; i < nodesCount; i++) {
-            rewardCount += nodes[i].rewardAvailable;
+            rewardCount += _getRewardsAvailable(nodes[i]);
         }
 
         return rewardCount;
@@ -620,7 +620,7 @@ contract NODERewardManagement {
             "CASHOUT ERROR: You don't have nodes to cash-out"
         );
         NodeEntity storage node = _getNodeWithCreatime(nodes, _creationTime);
-        uint256 rewardNode = node.rewardAvailable;
+        uint256 rewardNode = _getRewardsAvailable(node);
         return rewardNode;
     }
 
@@ -630,8 +630,9 @@ contract NODERewardManagement {
     returns (uint256)
     {
         return
-        _getNodeWithCreatime(_nodesOfUser[account], creationTime)
-        .rewardAvailable;
+        _getRewardsAvailable(
+            _getNodeWithCreatime(_nodesOfUser[account], creationTime)
+        );
     }
 
     function _getNodesNames(address account)
@@ -687,7 +688,7 @@ contract NODERewardManagement {
         NodeEntity[] memory nodes = _nodesOfUser[account];
         uint256 nodesCount = nodes.length;
         NodeEntity memory _node;
-        string memory _rewardsAvailable = uint2str(nodes[0].rewardAvailable);
+        string memory _rewardsAvailable = uint2str(_getRewardsAvailable(nodes[0]));
         string memory separator = "#";
 
         for (uint256 i = 1; i < nodesCount; i++) {
@@ -697,7 +698,7 @@ contract NODERewardManagement {
                 abi.encodePacked(
                     _rewardsAvailable,
                     separator,
-                    uint2str(_node.rewardAvailable)
+                    uint2str(_getRewardsAvailable(_node))
                 )
             );
         }
